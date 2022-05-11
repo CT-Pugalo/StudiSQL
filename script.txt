@@ -1,0 +1,277 @@
+CREATE DATABASE studisql CHARACTER SET utf8;
+
+CREATE USER 'admin'@'127.0.0.1' IDENTIFIED  BY 'h@rdP@ssw0rd';
+GRANT ALL PRIVILEGES  ON studisql.* TO 'admin'@'127.0.0.1';
+
+CREATE USER 'lambda'@'127.0.0.1' IDENTIFIED  BY 'notHardPassword';
+GRANT SELECT  ON studisql.* TO 'lambda'@'127.0.0.1';
+
+USE studisql;
+
+CREATE TABLE salle(
+id bigint(20),
+nbPlace integer,
+cinema_id bigint(20)
+);
+
+CREATE TABLE employe(
+id bigint(20),
+nom varchar(255),
+prenom varchar(255),
+identifiant varchar(255),
+motDePasse varchar(255),
+salaire integer,
+cinema_id bigint(20)
+);
+
+CREATE TABLE administrateur(
+id bigint(20),
+employe_id BIGINT(20)
+);
+
+CREATE TABLE cinema(
+id bigint(20),
+nom varchar(255),
+programmateur bigint(20)
+);
+
+CREATE TABLE sceance(
+id bigint(20),
+nomFilm varchar(255),
+horraire DATETIME,
+salle bigint(20) 
+);
+
+CREATE TABLE reservation(
+id bigint(20),
+sceance_id bigint(20),
+nom varchar(255),
+nbPersonneEtudiant integer,
+nbPersonneEnfant integer,
+nbPersonneAutre integer,
+paye boolean
+);
+
+ALTER TABLE `salle` 
+CHANGE `id` 
+`id` BIGINT(20) UNSIGNED NULL DEFAULT NULL AUTO_INCREMENT,
+ add PRIMARY KEY (`id`);
+ALTER TABLE `salle` 
+CHANGE `cinema_id` 
+`cinema_id` BIGINT(20) UNSIGNED NULL DEFAULT NULL;
+
+ALTER TABLE `employe` 
+CHANGE `id` 
+`id` BIGINT(20) UNSIGNED NULL DEFAULT NULL AUTO_INCREMENT,
+ add PRIMARY KEY (`id`);
+ALTER TABLE `employe` 
+CHANGE `cinema_id` 
+`cinema_id` BIGINT(20) UNSIGNED NULL DEFAULT NULL;
+
+ALTER TABLE `cinema` 
+CHANGE `id` 
+`id` BIGINT(20) UNSIGNED NULL DEFAULT NULL AUTO_INCREMENT,
+ add PRIMARY KEY (`id`);
+ALTER TABLE `cinema` 
+CHANGE `programmateur` 
+`programmateur` BIGINT(20) UNSIGNED NULL DEFAULT NULL;
+
+ALTER TABLE `sceance`
+CHANGE `id`
+`id` BIGINT(20) UNSIGNED NULL DEFAULT NULL AUTO_INCREMENT,
+ADD PRIMARY KEY (`id`);
+ALTER TABLE `sceance`
+CHANGE `salle`
+`salle` BIGINT(20) UNSIGNED NULL DEFAULT NULL;
+
+ALTER TABLE `administrateur`
+CHANGE `id` `id` BIGINT(20) UNSIGNED NULL DEFAULT NULL AUTO_INCREMENT,
+add PRIMARY KEY (`id`),
+CHANGE `employe_id`
+`employe_id` BIGINT(20) UNSIGNED NULL DEFAULT NULL;
+
+ALTER TABLE `reservation`
+CHANGE `id` `id` BIGINT(20) UNSIGNED NULL DEFAULT NULL AUTO_INCREMENT,
+add PRIMARY KEY (`id`),
+CHANGE `sceance_id`
+`sceance_id` BIGINT(20) UNSIGNED NULL DEFAULT NULL;
+
+ALTER TABLE `salle` ADD CONSTRAINT `otm_cinema-salle`
+FOREIGN KEY (`cinema_id`) REFERENCES `cinema`(`id`) 
+ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `employe` ADD CONSTRAINT `otm_cinema-employe`
+FOREIGN KEY (`cinema_id`) REFERENCES `cinema`(`id`) 
+ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `cinema` ADD CONSTRAINT `oto_cinema-programmateur`
+FOREIGN KEY (`programmateur`) REFERENCES `employe`(`id`) 
+ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `sceance` ADD CONSTRAINT `oto_sceance-salle`
+FOREIGN KEY (`salle`) REFERENCES `salle`(`id`) 
+ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `reservation` ADD CONSTRAINT `oto_reservation-sallesceance`
+FOREIGN KEY (`sceance_id`) REFERENCES `sceance`(`id`) 
+ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `administrateur` ADD CONSTRAINT `oto_employe-admin`
+FOREIGN KEY (`employe_id`) REFERENCES `employe`(`id`)
+ON DELETE CASCADE ON UPDATE CASCADE;
+
+
+INSERT INTO cinema (nom)
+VALUES ("CineLion"), ("CineTroyes"), ("CineReims"), ("CineParis"), ("CineMarseille");
+
+INSERT INTO salle (nbPlace, cinema_id)
+VALUES (15, 1),(15, 1),(30, 1),(20, 2),(30, 2), (40, 3), (90, 3), (100, 4), (50, 5);
+
+INSERT INTO employe (nom, prenom, identifiant, motDePasse, salaire, cinema_id)
+VALUES 
+("Dutroux", "Jaque", LOWER(CONCAT(SUBSTRING('DUTROUX', 1, 2), "",SUBSTRING('Jaque', 1, 1) )) , PASSWORD(CONCAT(SUBSTRING('DUTROUX', 1, 4), "",SUBSTRING('Jaque', 1, 3))), 1400, 1),
+("Dupond", "Xavier", LOWER(CONCAT(SUBSTRING('Dupond', 1, 2), "",SUBSTRING('Xavier', 1, 1) )) , PASSWORD(CONCAT(SUBSTRING('Dupond', 1, 4), "",SUBSTRING('Xavier', 1, 3))), 1400, 2),
+("Scorses", "Mahilde", LOWER(CONCAT(SUBSTRING('Scorses', 1, 2), "",SUBSTRING('Mathilde', 1, 1) )) , PASSWORD(CONCAT(SUBSTRING('Scorses', 1, 4), "",SUBSTRING('Mathilde', 1, 3))), 1400, 3),
+("Dubrovnik", "Zlatan", LOWER(CONCAT(SUBSTRING('Dubrovnik', 1, 2), "",SUBSTRING('Zlatan', 1, 1) )) , PASSWORD(CONCAT(SUBSTRING('Dubrovnik', 1, 2), "",SUBSTRING('Zlatan', 1, 1))),  1400, 4),
+("Henry", "Paul", LOWER(CONCAT(SUBSTRING('Henry', 1, 2), "",SUBSTRING('Paul', 1, 1) )) , PASSWORD(CONCAT(SUBSTRING('Henry', 1, 2), "",SUBSTRING('Paul', 1, 1))),  1400, 5),
+("Tatcher", "Margaret", LOWER(CONCAT(SUBSTRING('Tatcher', 1, 2), "",SUBSTRING('Margaret', 1, 1) )) , PASSWORD(CONCAT(SUBSTRING('Tatcher', 1, 2), "",SUBSTRING('Margaret', 1, 1))),  1400, 1),
+("Lebreton", "Loic", LOWER(CONCAT(SUBSTRING('Lebreton', 1, 2), "",SUBSTRING('Loic', 1, 1) )) , PASSWORD(CONCAT(SUBSTRING('Lebreton', 1, 2), "",SUBSTRING('Loic', 1, 1))),  1400, 2),
+("Lefrancais", "Emillie", LOWER(CONCAT(SUBSTRING('Lefrancais', 1, 2), "",SUBSTRING('Emillie', 1, 1) )) , PASSWORD(CONCAT(SUBSTRING('Lefrancais', 1, 2), "",SUBSTRING('Emillie', 1, 1))),  1400, 3),
+("McFaren", "Linus", LOWER(CONCAT(SUBSTRING('McFaren', 1, 2), "",SUBSTRING('Linus', 1, 1) )) , PASSWORD(CONCAT(SUBSTRING('McFaren', 1, 2), "",SUBSTRING('Linus', 1, 1))),  1400, 4),
+("Lange", "Michael", LOWER(CONCAT(SUBSTRING('Lange', 1, 2), "",SUBSTRING('Michael', 1, 1) )) , PASSWORD(CONCAT(SUBSTRING('Lange', 1, 2), "",SUBSTRING('Michael', 1, 1))),  1400, 5),
+("Ratzmann", "Olivier", LOWER(CONCAT(SUBSTRING('Ratzmann', 1, 2), "",SUBSTRING('Olivier', 1, 1) )) , PASSWORD(CONCAT(SUBSTRING('Ratzmann', 1, 2), "",SUBSTRING('Olivier', 1, 1))),  1400, 1);
+
+INSERT INTO administrateur (employe_id)
+VALUES (1), (3), (4), (6), (2);
+
+UPDATE cinema SET programmateur=6 WHERE cinema.id=1;
+UPDATE cinema SET programmateur=7 WHERE cinema.id=2;
+UPDATE cinema SET programmateur=8 WHERE cinema.id=3;
+UPDATE cinema SET programmateur=9 WHERE cinema.id=4;
+UPDATE cinema SET programmateur=10 WHERE cinema.id=5;
+
+INSERT INTO sceance (nomFilm, horraire, salle)
+VALUES 
+('Doctor Strange', '2022-04-05 19:20:00', 2),
+('Doctor Strange', '2022-04-05 19:20:00', 3),
+('Doctor Strange', '2022-04-05 19:20:00', 8),
+('Doctor Strange', '2022-04-05 19:20:00', 9),
+('Bianca', '2022-04-06 14:20:00', 1),
+('Mobidick', '2022-04-05 17:00:00', 4),
+('Thales', '2022-04-05 16:00:00', 5),
+('Eiffel', '2022-04-05 17:20:00', 6),
+('DeGaulle', '2022-04-05 20:00:00', 7);
+
+INSERT INTO reservation (sceance_id, nom, nbPersonneEtudiant, nbPersonneEnfant, nbPersonneAutre)
+VALUES
+(1, 'Dupond', 0, 0, 2),
+(3, 'Haddoc', 0, 0, 1),
+(5, 'Tintin', 0, 1, 1),
+(7, 'Tournesol', 0, 0, 1),
+(9, 'Nestor', 1, 1, 2);
+
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `NombreDePlaceRestantePourUneSceance`(IN `sceance` INT)
+SELECT nbPlace-SUM(
+	reservation.nbPersonneAutre +
+	reservation.nbPersonneEnfant +
+	reservation.nbPersonneEtudiant
+) as place_restante
+FROM salle, reservation, sceance
+WHERE
+sceance.id=sceance_id AND salle.id=sceance.salle AND reservation.sceance_id=sceance$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PrixReservation`(IN `reserv` INT)
+SELECT SUM(nbPersonneEtudiant*7.60 + nbPersonneEnfant*5.90 + nbPersonneAutre*9.20) as prixTTC
+FROM reservation WHERE reservation.id=reserv$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ToutLePersonelleDUnCine`(IN `id_cine` INT)
+SELECT DISTINCT cinema.nom, employe.prenom FROM employe
+RIGHT JOIN cinema on employe.cinema_id=cinema.id
+WHERE cinema.id=id_cine
+ORDER BY employe.cinema_id$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ToutLePersonelleDeToutLesCine`()
+SELECT DISTINCT cinema.nom, employe.prenom FROM employe
+RIGHT JOIN cinema on employe.cinema_id=cinema.id
+ORDER BY employe.cinema_id$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `ToutLesProgrammateurDeToutLesCine`()
+SELECT DISTINCT employe.nom, cinema.nom FROM cinema RIGHT JOIN employe on employe.id=cinema.programmateur WHERE cinema.nom IS NOT NULL ORDER BY cinema.id$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `TouteLesInfoDeToutLesCine`()
+SELECT DISTINCT cinema.nom as cinema_id, employe.id as employe_id, salle.id as salle_id FROM cinema
+LEFT JOIN employe ON employe.cinema_id=cinema.id
+LEFT JOIN salle ON salle.cinema_id=cinema.id
+ORDER BY cinema.id$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `TouteLesInfosDUnCine`(IN `id_cine` INT)
+SELECT DISTINCT cinema.nom as cinema_id, employe.id as employe_id, salle.id as salle_id FROM cinema
+LEFT JOIN employe ON employe.cinema_id=cinema.id
+LEFT JOIN salle ON salle.cinema_id=cinema.id
+WHERE cinema.id=id_cine
+ORDER BY cinema.id$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `TouteLesSallesDUnCinema`(IN `id_cine` INT)
+SELECT DISTINCT cinema.nom, salle.nbPlace FROM salle
+RIGHT JOIN cinema on salle.cinema_id=cinema.id
+WHERE cinema.id=id_cine
+ORDER BY salle.cinema_id$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `TouteLesSallesDeToutLesCinema`()
+BEGIN
+SELECT DISTINCT cinema.nom, salle.id FROM salle
+RIGHT JOIN cinema on salle.cinema_id=cinema.id
+ORDER BY salle.cinema_id;
+END$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `AjouterCine`(IN `nom` VARCHAR(255) CHARSET utf8mb3)
+INSERT INTO `cinema` (`nom`)
+VALUES (nom)$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `AjouterSalle`(IN `nbPlace` INT, IN `cinema` INT)
+INSERT INTO `salle` (`nbPlace`, `cinema_id`)
+VALUES (nbPlace, cinema)$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `AjouterProgrammateur`(IN `programmateur` INT, IN `cine` INT)
+UPDATE `ciname`
+SET `programmateur`=programmateur
+WHERE `id`=cine$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `AjouterEmploye`(IN `nom` VARCHAR(255), IN `prenom` VARCHAR(255), IN `salaire` INT, IN `cine` INT)
+INSERT INTO `employe` (`nom`, `prenom`, `identifiant`, `motDePasse`, `salaire`, `cinema_id`) 
+SELECT nom, prenom, LOWER(CONCAT(SUBSTRING(nom, 1, 2), "",SUBSTRING(prenom, 1, 1) )) , PASSWORD(CONCAT(SUBSTRING(nom, 1, 4), "",SUBSTRING(prenom, 1, 3))), salaire, cine$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `AjouterSceance`(IN `nomFilm` VARCHAR(255), IN `horraire` DATETIME, IN `salle` INT)
+INSERT INTO sceance (nomFilm, horraire, salle) 
+VALUES (nomFilm, horraire, salle)$$
+DELIMITER ;
+
+
